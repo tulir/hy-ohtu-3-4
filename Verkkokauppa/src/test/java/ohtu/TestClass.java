@@ -82,4 +82,34 @@ public class TestClass {
 		verify(pankki).tilisiirto(eq("pekka"), eq(45), eq("12345"), anyString(), eq(0));
 	}
 
+	@Test
+	public void test5() {
+		when(varasto.saldo(1)).thenReturn(1);
+		Tuote t = new Tuote(1, "maito", 5);
+		when(varasto.haeTuote(1)).thenReturn(t);
+
+		kauppa.aloitaAsiointi();
+		kauppa.lisaaKoriin(1);
+		verify(varasto).otaVarastosta(t);
+		kauppa.poistaKorista(1);
+		verify(varasto).palautaVarastoon(t);
+	}
+
+	@Test
+	public void test6() {
+		when(varasto.saldo(1)).thenReturn(10);
+		when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "maito", 5));
+
+		kauppa.aloitaAsiointi();
+		kauppa.lisaaKoriin(1);
+		kauppa.aloitaAsiointi();
+		kauppa.lisaaKoriin(1);
+		when(viite.uusi()).thenReturn(47);
+		kauppa.tilimaksu("pekka", "12345");
+		verify(pankki).tilisiirto(eq("pekka"), eq(47), eq("12345"), anyString(), eq(5));
+		when(viite.uusi()).thenReturn(48);
+		kauppa.tilimaksu("pekka", "12345");
+		verify(pankki).tilisiirto(eq("pekka"), eq(48), eq("12345"), anyString(), eq(5));
+	}
+
 }
